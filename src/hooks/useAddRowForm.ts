@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import type { UseAddRowFormParams } from '../types/props'
 import type { RowType } from '../types/row'
 import {
   hasAddRowErrors,
@@ -6,16 +7,6 @@ import {
   type AddRowFormErrors,
   type AddRowFormValues,
 } from '../utils/rowValidation'
-
-interface UseAddRowFormParams {
-  onClose: () => void
-  onConfirm: (row: {
-    name: string
-    parent_id: string
-    radius: number
-    type: RowType
-  }) => void
-}
 
 const initialFormValues: AddRowFormValues = {
   name: '',

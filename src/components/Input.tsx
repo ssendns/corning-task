@@ -1,13 +1,4 @@
-interface InputProps {
-  label: string
-  value: string
-  onChange: (value: string) => void
-  error?: string
-  type?: 'text' | 'number' | 'select'
-  min?: string
-  step?: string
-  options?: Array<{ label: string; value: string }>
-}
+import type { InputProps } from '../types/props'
 
 function Input({ label, value, onChange, error, type = 'text', min, step, options }: InputProps) {
   return (

@@ -1,9 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-
-interface UsePersistentMultiSelectParams<T extends string> {
-  storageKey: string
-  validValues: Set<T>
-}
+import type { UsePersistentMultiSelectParams } from '../types/props'
 
 function usePersistentMultiSelect<T extends string>({
   storageKey,

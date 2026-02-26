@@ -1,14 +1,5 @@
 import { useMemo } from 'react'
-import type { ColumnKey } from '../constants/tableColumns'
-import type { SortConfig } from '../types/props'
-import type { Row } from '../types/row'
-
-interface UseFilteredSortedRowsParams {
-  rows: Row[]
-  search: string
-  selectedColumns: ColumnKey[]
-  sortConfig: SortConfig | null
-}
+import type { UseFilteredSortedRowsParams } from '../types/props'
 
 function useFilteredSortedRows({
   rows,

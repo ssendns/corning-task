@@ -1,9 +1,4 @@
-interface DeleteConfirmModalProps {
-  isOpen: boolean
-  selectedCount: number
-  onClose: () => void
-  onConfirm: () => void
-}
+import type { DeleteConfirmModalProps } from '../types/props'
 
 function DeleteConfirmModal({
   isOpen,
