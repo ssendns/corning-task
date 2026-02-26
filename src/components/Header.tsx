@@ -2,7 +2,13 @@ import type { HeaderProps } from '../types/props'
 import { tableColumns } from '../constants/tableColumns'
 import SearchBar from './SearchBar'
 
-function Header({ search, onSearchChange, selectedColumns }: HeaderProps) {
+function Header({
+  search,
+  onSearchChange,
+  selectedColumns,
+  selectedRowCount,
+  onDeleteClick,
+}: HeaderProps) {
   const selectedLabel =
     selectedColumns.length === 0
       ? 'all columns'
@@ -24,7 +30,13 @@ function Header({ search, onSearchChange, selectedColumns }: HeaderProps) {
         <div className="flex items-center gap-2">
           <button
             type="button"
-            className="min-w-24 rounded-xl border border-rose-300 bg-rose-50 px-3 py-2 text-sm font-medium text-rose-700 transition hover:bg-rose-100"
+            disabled={selectedRowCount === 0}
+            onClick={onDeleteClick}
+            className={`min-w-24 rounded-xl px-3 py-2 text-sm font-medium transition ${
+              selectedRowCount === 0
+                ? 'cursor-not-allowed border border-rose-300 bg-rose-50 text-rose-700 opacity-70'
+                : 'border border-rose-600 bg-rose-600 text-white hover:bg-rose-700'
+            }`}
           >
             Delete
           </button>

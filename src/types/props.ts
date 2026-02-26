@@ -28,6 +28,8 @@ export interface HeaderProps {
   search: string
   onSearchChange: (value: string) => void
   selectedColumns: ColumnKey[]
+  selectedRowCount: number
+  onDeleteClick: () => void
 }
 
 export interface SearchBarProps {
