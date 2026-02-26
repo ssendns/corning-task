@@ -9,12 +9,26 @@ const rows = mockData as Row[]
 
 function App() {
   const [search, setSearch] = useState('')
-  const [selectedColumn, setSelectedColumn] = useState<ColumnKey>('name')
-  const [activeId, setActiveId] = useState<string>(rows[0]?.id ?? '')
+  const [selectedColumn, setSelectedColumn] = useState<ColumnKey | null>(null)
+  const [activeId, setActiveId] = useState<string>('')
+
+  const handleSelectRow = (id: string) => {
+    setActiveId((prev) => (prev === id ? '' : id))
+  }
+
+  const handleToggleColumn = (key: ColumnKey) => {
+    setSelectedColumn((prev) => (prev === key ? null : key))
+  }
 
   const filteredRows = useMemo(() => {
     const query = search.trim().toLowerCase()
     if (!query) return rows
+
+    if (!selectedColumn) {
+      return rows.filter((row) =>
+        Object.values(row).some((value) => String(value).toLowerCase().includes(query)),
+      )
+    }
 
     return rows.filter((row) => String(row[selectedColumn]).toLowerCase().includes(query))
   }, [search, selectedColumn])
@@ -25,11 +39,16 @@ function App() {
         search={search}
         onSearchChange={setSearch}
         selectedColumn={selectedColumn}
-        onSelectedColumnChange={setSelectedColumn}
       />
 
       <section>
-        <Table data={filteredRows} activeId={activeId} onSelect={setActiveId} />
+        <Table
+          data={filteredRows}
+          activeId={activeId}
+          onSelect={handleSelectRow}
+          selectedColumn={selectedColumn}
+          onToggleColumn={handleToggleColumn}
+        />
       </section>
     </main>
   )

@@ -3,11 +3,11 @@ import TableRow from './TableRow'
 import { tableColumns } from '../constants/tableColumns'
 import type { TableProps } from '../types/props'
 
-function Table({ data, activeId, onSelect }: TableProps) {
+function Table({ data, activeId, onSelect, selectedColumn, onToggleColumn }: TableProps) {
   return (
     <div className="w-full overflow-x-auto border border-app-border bg-white">
       <table className="w-full border-collapse">
-        <TableHeader />
+        <TableHeader selectedColumn={selectedColumn} onToggleColumn={onToggleColumn} />
         <tbody>
           {data.length > 0 ? (
             data.map((row) => (
@@ -17,7 +17,7 @@ function Table({ data, activeId, onSelect }: TableProps) {
             <tr>
               <td
                 colSpan={tableColumns.length}
-                className="border-b border-app-border px-3 py-8 text-center text-sm text-app-subtle"
+                className="px-3 py-8 text-center text-sm text-app-subtle"
               >
                 Nothing found
               </td>
