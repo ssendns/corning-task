@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import { ChevronDown } from 'lucide-react'
 import { tableColumns } from '../constants/tableColumns'
-import { MIN_COLUMN_WIDTH } from '../constants/ui'
+import { MIN_COLUMN_WIDTH } from '../constants/tableConfig'
 import type { ColumnKey } from '../constants/tableColumns'
 import type { TableHeaderProps } from '../types/props'
 import ColumnResizeHandle from './ColumnResizeHandle'
@@ -50,7 +50,9 @@ function TableHeader({
                 onMouseDown={(event) => event.stopPropagation()}
                 onClick={(event) => {
                   event.stopPropagation()
-                  setOpenMenuKey((prev: ColumnKey | null) => (prev === column.key ? null : column.key))
+                  setOpenMenuKey((prev: ColumnKey | null) =>
+                    prev === column.key ? null : column.key,
+                  )
                 }}
                 className="rounded p-1 text-slate-500 hover:bg-slate-200 hover:text-slate-700"
                 aria-label={`Open ${column.label} filter menu`}
