@@ -24,4 +24,12 @@ export const getCellClassName = (key: ColumnKey) => {
   return `${base} text-app-text`
 }
 
-export const getCellValue = (row: Row, key: ColumnKey) => String(row[key])
+export const getCellValue = (row: Row, key: ColumnKey) => {
+  const value = row[key]
+
+  if (typeof value === 'string' && value.trim() === '') {
+    return '-'
+  }
+
+  return String(value)
+}
