@@ -7,15 +7,22 @@ import type { Row } from './types/row'
 
 const rows = mockData as Row[]
 const ACTIVE_ROW_STORAGE_KEY = 'active-row-id'
-const ACTIVE_COLUMN_STORAGE_KEY = 'active-column-key'
+const ACTIVE_COLUMNS_STORAGE_KEY = 'active-column-keys'
 const validColumnKeys = new Set<ColumnKey>(tableColumns.map((column) => column.key))
 
 function App() {
   const [search, setSearch] = useState('')
-  const [selectedColumn, setSelectedColumn] = useState<ColumnKey | null>(() => {
-    const savedColumn = localStorage.getItem(ACTIVE_COLUMN_STORAGE_KEY)
-    if (!savedColumn || !validColumnKeys.has(savedColumn as ColumnKey)) return null
-    return savedColumn as ColumnKey
+  const [selectedColumns, setSelectedColumns] = useState<ColumnKey[]>(() => {
+    const savedColumns = localStorage.getItem(ACTIVE_COLUMNS_STORAGE_KEY)
+    if (!savedColumns) return []
+
+    try {
+      const parsed = JSON.parse(savedColumns)
+      if (!Array.isArray(parsed)) return []
+      return parsed.filter((key): key is ColumnKey => validColumnKeys.has(key))
+    } catch {
+      return []
+    }
   })
   const [activeId, setActiveId] = useState<string>(() => {
     const savedRowId = localStorage.getItem(ACTIVE_ROW_STORAGE_KEY)
@@ -27,22 +34,36 @@ function App() {
     setActiveId((prev) => (prev === id ? '' : id))
   }
 
-  const handleToggleColumn = (key: ColumnKey) => {
-    setSelectedColumn((prev) => (prev === key ? null : key))
+  const handleToggleColumn = (key: ColumnKey, withShift: boolean) => {
+    setSelectedColumns((prev) => {
+      const exists = prev.includes(key)
+
+      if (withShift) {
+        return exists ? prev.filter((column) => column !== key) : [...prev, key]
+      }
+
+      if (prev.length === 1 && exists) {
+        return []
+      }
+
+      return [key]
+    })
   }
 
   const filteredRows = useMemo(() => {
     const query = search.trim().toLowerCase()
     if (!query) return rows
 
-    if (!selectedColumn) {
+    if (selectedColumns.length === 0) {
       return rows.filter((row) =>
         Object.values(row).some((value) => String(value).toLowerCase().includes(query)),
       )
     }
 
-    return rows.filter((row) => String(row[selectedColumn]).toLowerCase().includes(query))
-  }, [search, selectedColumn])
+    return rows.filter((row) =>
+      selectedColumns.some((column) => String(row[column]).toLowerCase().includes(query)),
+    )
+  }, [search, selectedColumns])
 
   useEffect(() => {
     if (!activeId) {
@@ -53,19 +74,19 @@ function App() {
   }, [activeId])
 
   useEffect(() => {
-    if (!selectedColumn) {
-      localStorage.removeItem(ACTIVE_COLUMN_STORAGE_KEY)
+    if (selectedColumns.length === 0) {
+      localStorage.removeItem(ACTIVE_COLUMNS_STORAGE_KEY)
       return
     }
-    localStorage.setItem(ACTIVE_COLUMN_STORAGE_KEY, selectedColumn)
-  }, [selectedColumn])
+    localStorage.setItem(ACTIVE_COLUMNS_STORAGE_KEY, JSON.stringify(selectedColumns))
+  }, [selectedColumns])
 
   return (
     <main className="min-h-screen">
       <Header
         search={search}
         onSearchChange={setSearch}
-        selectedColumn={selectedColumn}
+        selectedColumns={selectedColumns}
       />
 
       <section>
@@ -73,7 +94,7 @@ function App() {
           data={filteredRows}
           activeId={activeId}
           onSelect={handleSelectRow}
-          selectedColumn={selectedColumn}
+          selectedColumns={selectedColumns}
           onToggleColumn={handleToggleColumn}
         />
       </section>
