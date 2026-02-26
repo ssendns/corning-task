@@ -58,3 +58,9 @@ export interface SearchBarProps {
   onSearchChange: (value: string) => void
   placeholder: string
 }
+
+export interface AddRowModalProps {
+  isOpen: boolean
+  onClose: () => void
+  onConfirm: (row: Omit<Row, 'id'>) => void
+}

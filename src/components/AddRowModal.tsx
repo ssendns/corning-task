@@ -1,111 +1,52 @@
-import { useState } from 'react'
-import type { Row, RowType } from '../types/row'
-import {
-  hasAddRowErrors,
-  rowTypeOptions,
-  validateAddRow,
-  type AddRowFormErrors,
-  type AddRowFormValues,
-} from '../utils/rowValidation'
-
-interface AddRowModalProps {
-  isOpen: boolean
-  onClose: () => void
-  onConfirm: (row: Omit<Row, 'id'>) => void
-}
-
-const initialFormValues: AddRowFormValues = {
-  name: '',
-  parentId: '',
-  radius: '',
-  type: 'bubble',
-}
+import useAddRowForm from '../hooks/useAddRowForm'
+import Input from './Input'
+import type { AddRowModalProps } from '../types/props'
+import { rowTypeOptions } from '../utils/rowValidation'
 
 function AddRowModal({ isOpen, onClose, onConfirm }: AddRowModalProps) {
-  const [values, setValues] = useState<AddRowFormValues>(initialFormValues)
-  const [errors, setErrors] = useState<AddRowFormErrors>({})
+  const { values, setValues, errors, handleSubmit, handleCancel } = useAddRowForm({
+    onClose,
+    onConfirm,
+  })
 
   if (!isOpen) return null
-
-  const resetForm = () => {
-    setValues(initialFormValues)
-    setErrors({})
-  }
-
-  const handleSubmit = () => {
-    const validationErrors = validateAddRow(values)
-    setErrors(validationErrors)
-
-    if (hasAddRowErrors(validationErrors)) return
-
-    onConfirm({
-      name: values.name.trim(),
-      parent_id: values.parentId.trim(),
-      radius: Number(values.radius),
-      type: values.type as RowType,
-    })
-    resetForm()
-  }
-
-  const handleCancel = () => {
-    resetForm()
-    onClose()
-  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
       <div className="w-full max-w-lg rounded-2xl border border-app-border bg-white p-5 shadow-xl">
         <h2 className="text-lg font-semibold text-app-text">Add new row</h2>
         <div className="mt-4 grid gap-3">
-          <label className="block">
-            <span className="text-sm font-medium text-app-text">Name</span>
-            <input
-              type="text"
-              value={values.name}
-              onChange={(event) => setValues((prev) => ({ ...prev, name: event.target.value }))}
-              className="mt-1 w-full rounded-xl border border-app-border px-3 py-2 text-sm text-app-text outline-none focus:border-app-accent"
-            />
-            {errors.name && <p className="mt-1 text-xs text-rose-600">{errors.name}</p>}
-          </label>
+          <Input
+            label="Name"
+            value={values.name}
+            onChange={(value) => setValues((prev) => ({ ...prev, name: value }))}
+            error={errors.name}
+          />
 
-          <label className="block">
-            <span className="text-sm font-medium text-app-text">Parent ID (optional)</span>
-            <input
-              type="text"
-              value={values.parentId}
-              onChange={(event) => setValues((prev) => ({ ...prev, parentId: event.target.value }))}
-              className="mt-1 w-full rounded-xl border border-app-border px-3 py-2 text-sm text-app-text outline-none focus:border-app-accent"
-            />
-          </label>
+          <Input
+            label="Parent ID (optional)"
+            value={values.parentId}
+            onChange={(value) => setValues((prev) => ({ ...prev, parentId: value }))}
+          />
 
-          <label className="block">
-            <span className="text-sm font-medium text-app-text">Radius</span>
-            <input
-              type="number"
-              min="0.000001"
-              step="any"
-              value={values.radius}
-              onChange={(event) => setValues((prev) => ({ ...prev, radius: event.target.value }))}
-              className="mt-1 w-full rounded-xl border border-app-border px-3 py-2 text-sm text-app-text outline-none focus:border-app-accent"
-            />
-            {errors.radius && <p className="mt-1 text-xs text-rose-600">{errors.radius}</p>}
-          </label>
+          <Input
+            label="Radius"
+            type="number"
+            min="0.01"
+            step="any"
+            value={values.radius}
+            onChange={(value) => setValues((prev) => ({ ...prev, radius: value }))}
+            error={errors.radius}
+          />
 
-          <label className="block">
-            <span className="text-sm font-medium text-app-text">Type</span>
-            <select
-              value={values.type}
-              onChange={(event) => setValues((prev) => ({ ...prev, type: event.target.value }))}
-              className="mt-1 w-full rounded-xl border border-app-border px-3 py-2 text-sm text-app-text outline-none focus:border-app-accent"
-            >
-              {rowTypeOptions.map((type) => (
-                <option key={type} value={type}>
-                  {type}
-                </option>
-              ))}
-            </select>
-            {errors.type && <p className="mt-1 text-xs text-rose-600">{errors.type}</p>}
-          </label>
+          <Input
+            label="Type"
+            type="select"
+            value={values.type}
+            onChange={(value) => setValues((prev) => ({ ...prev, type: value }))}
+            options={rowTypeOptions.map((type) => ({ label: type, value: type }))}
+            error={errors.type}
+          />
         </div>
 
         <div className="mt-5 flex justify-end gap-2">
