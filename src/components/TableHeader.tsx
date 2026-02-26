@@ -1,23 +1,9 @@
 import { useState } from 'react'
+import { ChevronDown } from 'lucide-react'
 import { tableColumns } from '../constants/tableColumns'
 import type { ColumnKey } from '../constants/tableColumns'
 import ColumnFilterMenu from './ColumnFilterMenu'
 import type { SortConfig } from '../types/props'
-
-function ChevronDownIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" className="h-3 w-3">
-      <path
-        d="m6 9 6 6 6-6"
-        fill="none"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="2"
-      />
-    </svg>
-  )
-}
 
 interface TableHeaderProps {
   selectedColumns: ColumnKey[]
@@ -60,7 +46,7 @@ function TableHeader({ selectedColumns, onToggleColumn, sortConfig, onSortChange
                 className="rounded p-1 text-slate-500 hover:bg-slate-200 hover:text-slate-700"
                 aria-label={`Open ${column.label} filter menu`}
               >
-                <ChevronDownIcon />
+                <ChevronDown className="h-3 w-3" />
               </button>
               <ColumnFilterMenu
                 isOpen={openMenuKey === column.key}
