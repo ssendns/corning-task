@@ -5,6 +5,8 @@ export interface TableProps {
   data: Row[]
   activeId: string
   onSelect: (id: string) => void
+  selectedColumn: ColumnKey | null
+  onToggleColumn: (key: ColumnKey) => void
 }
 
 export interface TableRowProps {
@@ -16,13 +18,11 @@ export interface TableRowProps {
 export interface HeaderProps {
   search: string
   onSearchChange: (value: string) => void
-  selectedColumn: ColumnKey
-  onSelectedColumnChange: (value: ColumnKey) => void
+  selectedColumn: ColumnKey | null
 }
 
 export interface SearchBarProps {
   search: string
   onSearchChange: (value: string) => void
-  selectedColumn: ColumnKey
-  onSelectedColumnChange: (value: ColumnKey) => void
+  placeholder: string
 }
