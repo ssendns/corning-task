@@ -13,6 +13,15 @@ export interface AddRowFormErrors {
   type?: string
 }
 
+export interface EditRowFormValues {
+  name: string
+  parent_id: string
+  radius: string
+  type: string
+}
+
+export type EditRowFormErrors = AddRowFormErrors
+
 export const rowTypeOptions: RowType[] = ['bubble', 'crack', 'scratch']
 
 export const validateAddRow = (values: AddRowFormValues): AddRowFormErrors => {
@@ -35,3 +44,22 @@ export const validateAddRow = (values: AddRowFormValues): AddRowFormErrors => {
 }
 
 export const hasAddRowErrors = (errors: AddRowFormErrors) => Object.keys(errors).length > 0
+
+export const validateEditRow = (values: EditRowFormValues): EditRowFormErrors => {
+  const errors: EditRowFormErrors = {}
+
+  if (!values.name.trim()) {
+    errors.name = 'Name is required.'
+  }
+
+  const radiusValue = Number(values.radius)
+  if (!values.radius.trim() || Number.isNaN(radiusValue) || radiusValue <= 0) {
+    errors.radius = 'Radius must be a number greater than 0.'
+  }
+
+  if (!rowTypeOptions.includes(values.type as RowType)) {
+    errors.type = 'Type must be bubble, crack, or scratch.'
+  }
+
+  return errors
+}
