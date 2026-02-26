@@ -6,10 +6,10 @@ function TableHeader() {
       <tr>
         {tableColumns.map((column) => (
           <th
-            key={column}
+            key={column.key}
             className="border-b-2 border-app-border px-3 py-2.5 text-left font-semibold"
           >
-            {column}
+            {column.label}
           </th>
         ))}
       </tr>
