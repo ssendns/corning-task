@@ -1,3 +1,4 @@
+import { Redo2, Undo2 } from 'lucide-react'
 import type { HeaderProps } from '../types/props'
 import { tableColumns } from '../constants/tableColumns'
 import SearchBar from './SearchBar'
@@ -8,6 +9,11 @@ function Header({
   selectedColumns,
   selectedRowCount,
   onDeleteClick,
+  onAddClick,
+  canUndo,
+  canRedo,
+  onUndoClick,
+  onRedoClick,
 }: HeaderProps) {
   const selectedLabel =
     selectedColumns.length === 0
@@ -30,6 +36,32 @@ function Header({
         <div className="flex items-center gap-2">
           <button
             type="button"
+            disabled={!canUndo}
+            onClick={onUndoClick}
+            aria-label="Undo"
+            className={`min-w-10 rounded-lg px-2 py-1.5 text-sm font-medium transition ${
+              canUndo
+                ? 'border border-app-border bg-white text-app-text hover:bg-slate-50'
+                : 'cursor-not-allowed border border-app-border bg-slate-100 text-app-subtle opacity-70'
+            }`}
+          >
+            <Undo2 className="mx-auto h-3.5 w-3.5" />
+          </button>
+          <button
+            type="button"
+            disabled={!canRedo}
+            onClick={onRedoClick}
+            aria-label="Redo"
+            className={`min-w-10 rounded-lg px-2 py-1.5 text-sm font-medium transition ${
+              canRedo
+                ? 'border border-app-border bg-white text-app-text hover:bg-slate-50'
+                : 'cursor-not-allowed border border-app-border bg-slate-100 text-app-subtle opacity-70'
+            }`}
+          >
+            <Redo2 className="mx-auto h-3.5 w-3.5" />
+          </button>
+          <button
+            type="button"
             disabled={selectedRowCount === 0}
             onClick={onDeleteClick}
             className={`min-w-24 rounded-xl px-3 py-2 text-sm font-medium transition ${
@@ -42,6 +74,7 @@ function Header({
           </button>
           <button
             type="button"
+            onClick={onAddClick}
             className="min-w-24 rounded-xl border border-app-accent bg-app-accent px-3 py-2 text-sm font-medium text-white transition hover:opacity-90"
           >
             Add new

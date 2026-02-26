@@ -30,6 +30,11 @@ export interface HeaderProps {
   selectedColumns: ColumnKey[]
   selectedRowCount: number
   onDeleteClick: () => void
+  onAddClick: () => void
+  canUndo: boolean
+  canRedo: boolean
+  onUndoClick: () => void
+  onRedoClick: () => void
 }
 
 export interface SearchBarProps {
