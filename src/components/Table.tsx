@@ -3,7 +3,7 @@ import TableRow from './TableRow'
 import { tableColumns } from '../constants/tableColumns'
 import type { TableProps } from '../types/props'
 
-function Table({ data, activeId, onSelect, selectedColumns, onToggleColumn }: TableProps) {
+function Table({ data, selectedRows, onToggleRow, selectedColumns, onToggleColumn }: TableProps) {
   return (
     <div className="w-full overflow-x-auto border border-app-border bg-white">
       <table className="w-full border-collapse">
@@ -11,7 +11,12 @@ function Table({ data, activeId, onSelect, selectedColumns, onToggleColumn }: Ta
         <tbody>
           {data.length > 0 ? (
             data.map((row) => (
-              <TableRow key={row.id} row={row} isActive={row.id === activeId} onSelect={onSelect} />
+              <TableRow
+                key={row.id}
+                row={row}
+                isSelected={selectedRows.includes(row.id)}
+                onToggleRow={onToggleRow}
+              />
             ))
           ) : (
             <tr>

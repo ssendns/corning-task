@@ -6,9 +6,10 @@ import mockData from './constants/mockData.json'
 import type { Row } from './types/row'
 
 const rows = mockData as Row[]
-const ACTIVE_ROW_STORAGE_KEY = 'active-row-id'
+const ACTIVE_ROWS_STORAGE_KEY = 'active-row-ids'
 const ACTIVE_COLUMNS_STORAGE_KEY = 'active-column-keys'
 const validColumnKeys = new Set<ColumnKey>(tableColumns.map((column) => column.key))
+const validRowIds = new Set<string>(rows.map((row) => row.id))
 
 function App() {
   const [search, setSearch] = useState('')
@@ -24,14 +25,33 @@ function App() {
       return []
     }
   })
-  const [activeId, setActiveId] = useState<string>(() => {
-    const savedRowId = localStorage.getItem(ACTIVE_ROW_STORAGE_KEY)
-    if (!savedRowId || !rows.some((row) => row.id === savedRowId)) return ''
-    return savedRowId
+  const [selectedRows, setSelectedRows] = useState<string[]>(() => {
+    const savedRows = localStorage.getItem(ACTIVE_ROWS_STORAGE_KEY)
+    if (!savedRows) return []
+
+    try {
+      const parsed = JSON.parse(savedRows)
+      if (!Array.isArray(parsed)) return []
+      return parsed.filter((id): id is string => validRowIds.has(id))
+    } catch {
+      return []
+    }
   })
 
-  const handleSelectRow = (id: string) => {
-    setActiveId((prev) => (prev === id ? '' : id))
+  const handleToggleRow = (id: string, withShift: boolean) => {
+    setSelectedRows((prev) => {
+      const exists = prev.includes(id)
+
+      if (withShift) {
+        return exists ? prev.filter((rowId) => rowId !== id) : [...prev, id]
+      }
+
+      if (prev.length === 1 && exists) {
+        return []
+      }
+
+      return [id]
+    })
   }
 
   const handleToggleColumn = (key: ColumnKey, withShift: boolean) => {
@@ -66,12 +86,12 @@ function App() {
   }, [search, selectedColumns])
 
   useEffect(() => {
-    if (!activeId) {
-      localStorage.removeItem(ACTIVE_ROW_STORAGE_KEY)
+    if (selectedRows.length === 0) {
+      localStorage.removeItem(ACTIVE_ROWS_STORAGE_KEY)
       return
     }
-    localStorage.setItem(ACTIVE_ROW_STORAGE_KEY, activeId)
-  }, [activeId])
+    localStorage.setItem(ACTIVE_ROWS_STORAGE_KEY, JSON.stringify(selectedRows))
+  }, [selectedRows])
 
   useEffect(() => {
     if (selectedColumns.length === 0) {
@@ -92,8 +112,8 @@ function App() {
       <section>
         <Table
           data={filteredRows}
-          activeId={activeId}
-          onSelect={handleSelectRow}
+          selectedRows={selectedRows}
+          onToggleRow={handleToggleRow}
           selectedColumns={selectedColumns}
           onToggleColumn={handleToggleColumn}
         />
