@@ -5,7 +5,7 @@ interface HeaderProps {
 
 function Header({ search, onSearchChange }: HeaderProps) {
   return (
-    <header className="w-full border-y border-app-border bg-white px-4 py-4 shadow-sm">
+    <header className="w-full border-b-2 border-app-border bg-white px-4 py-4 shadow-sm">
       <input
         type="text"
         value={search}
