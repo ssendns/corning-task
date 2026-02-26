@@ -11,7 +11,7 @@ export const tableColumns = [
 export type ColumnKey = (typeof tableColumns)[number]['key']
 
 export const getCellClassName = (key: ColumnKey) => {
-  const base = 'border-b border-app-border px-3 py-2'
+  const base = 'px-3 py-2'
 
   if (key === 'id' || key === 'parent_id') {
     return `${base} font-mono text-xs text-app-subtle`
