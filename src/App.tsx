@@ -9,14 +9,27 @@ import useFilteredSortedRows from './hooks/useFilteredSortedRows'
 import usePersistentMultiSelect from './hooks/usePersistentMultiSelect'
 import type { SortConfig } from './types/props'
 import type { Row } from './types/row'
+import {
+  validateEditRow,
+  type EditRowFormErrors,
+  type EditRowFormValues,
+} from './utils/rowValidation'
 
 const initialRows = mockData as Row[]
 const TABLE_ROWS_STORAGE_KEY = 'table-rows'
 const ACTIVE_ROWS_STORAGE_KEY = 'active-row-ids'
 const ACTIVE_COLUMNS_STORAGE_KEY = 'active-column-keys'
+const COLUMN_WIDTHS_STORAGE_KEY = 'table-column-widths'
 const validColumnKeys = new Set<ColumnKey>(tableColumns.map((column) => column.key))
 const validRowIds = new Set<string>(initialRows.map((row) => row.id))
 const validTypes = new Set(['bubble', 'crack', 'scratch'])
+const defaultColumnWidths: Record<ColumnKey, number> = {
+  id: 260,
+  name: 190,
+  type: 140,
+  radius: 130,
+  parent_id: 260,
+}
 
 const isRow = (value: unknown): value is Row => {
   if (!value || typeof value !== 'object') return false
@@ -49,6 +62,28 @@ const getInitialRows = () => {
   }
 }
 
+const getInitialColumnWidths = () => {
+  if (typeof window === 'undefined') return defaultColumnWidths
+
+  const savedWidths = localStorage.getItem(COLUMN_WIDTHS_STORAGE_KEY)
+  if (!savedWidths) return defaultColumnWidths
+
+  try {
+    const parsed = JSON.parse(savedWidths) as Partial<Record<ColumnKey, number>>
+
+    return tableColumns.reduce(
+      (acc, column) => {
+        const value = parsed[column.key]
+        acc[column.key] = typeof value === 'number' && value >= 96 ? value : defaultColumnWidths[column.key]
+        return acc
+      },
+      {} as Record<ColumnKey, number>,
+    )
+  } catch {
+    return defaultColumnWidths
+  }
+}
+
 const generateUniqueRowId = (existingRows: Row[]) => {
   const existingIds = new Set(existingRows.map((row) => row.id))
 
@@ -70,16 +105,28 @@ function App() {
   const [sortConfig, setSortConfig] = useState<SortConfig | null>(null)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+  const [columnWidths, setColumnWidths] = useState<Record<ColumnKey, number>>(getInitialColumnWidths)
+  const [editingRowId, setEditingRowId] = useState<string | null>(null)
+  const [editValues, setEditValues] = useState<EditRowFormValues>({
+    name: '',
+    parent_id: '',
+    radius: '',
+    type: 'bubble',
+  })
+  const [editErrors, setEditErrors] = useState<EditRowFormErrors>({})
   const { selected: selectedColumns, toggleSelected: toggleColumn } =
     usePersistentMultiSelect<ColumnKey>({
       storageKey: ACTIVE_COLUMNS_STORAGE_KEY,
       validValues: validColumnKeys,
     })
-  const { selected: selectedRows, toggleSelected: toggleRow, setSelected: setSelectedRows } =
-    usePersistentMultiSelect<string>({
-      storageKey: ACTIVE_ROWS_STORAGE_KEY,
-      validValues: validRowIds,
-    })
+  const {
+    selected: selectedRows,
+    toggleSelected: toggleRow,
+    setSelected: setSelectedRows,
+  } = usePersistentMultiSelect<string>({
+    storageKey: ACTIVE_ROWS_STORAGE_KEY,
+    validValues: validRowIds,
+  })
 
   const sortedRows = useFilteredSortedRows({
     rows,
@@ -96,8 +143,19 @@ function App() {
   }, [selectedRows, setSelectedRows, visibleRowIds])
 
   useEffect(() => {
+    if (!editingRowId) return
+    if (rows.some((row) => row.id === editingRowId)) return
+    setEditingRowId(null)
+    setEditErrors({})
+  }, [editingRowId, rows])
+
+  useEffect(() => {
     localStorage.setItem(TABLE_ROWS_STORAGE_KEY, JSON.stringify(rows))
   }, [rows])
+
+  useEffect(() => {
+    localStorage.setItem(COLUMN_WIDTHS_STORAGE_KEY, JSON.stringify(columnWidths))
+  }, [columnWidths])
 
   const handleOpenDeleteModal = () => {
     if (selectedRows.length === 0) return
@@ -164,6 +222,67 @@ function App() {
     setRows(nextRows)
   }
 
+  const handleResizeColumn = (key: ColumnKey, width: number) => {
+    setColumnWidths((prev) => ({ ...prev, [key]: width }))
+  }
+
+  const handleStartEdit = (row: Row) => {
+    setEditingRowId(row.id)
+    setEditValues({
+      name: row.name,
+      parent_id: row.parent_id,
+      radius: String(row.radius),
+      type: row.type,
+    })
+    setEditErrors({})
+  }
+
+  const handleCancelEdit = () => {
+    setEditingRowId(null)
+    setEditErrors({})
+  }
+
+  const handleEditValueChange = (field: keyof EditRowFormValues, value: string) => {
+    setEditValues((prev) => ({ ...prev, [field]: value }))
+    setEditErrors((prev) => {
+      if (!prev[field as keyof EditRowFormErrors]) return prev
+      const next = { ...prev }
+      delete next[field as keyof EditRowFormErrors]
+      return next
+    })
+  }
+
+  const handleSaveEdit = () => {
+    if (!editingRowId) return
+
+    const validationErrors = validateEditRow(editValues)
+    if (Object.keys(validationErrors).length > 0) {
+      setEditErrors(validationErrors)
+      return
+    }
+
+    setRows((prev) => {
+      const nextRows = prev.map((row) =>
+        row.id === editingRowId
+          ? {
+              ...row,
+              name: editValues.name.trim(),
+              parent_id: editValues.parent_id.trim(),
+              radius: Number(editValues.radius),
+              type: editValues.type as Row['type'],
+            }
+          : row,
+      )
+
+      setPastRows((history) => [...history, prev])
+      setFutureRows([])
+      return nextRows
+    })
+
+    setEditingRowId(null)
+    setEditErrors({})
+  }
+
   return (
     <main className="min-h-screen">
       <Header
@@ -171,8 +290,11 @@ function App() {
         onSearchChange={setSearch}
         selectedColumns={selectedColumns}
         selectedRowCount={selectedRows.length}
+        isEditing={editingRowId !== null}
         onDeleteClick={handleOpenDeleteModal}
         onAddClick={handleOpenAddModal}
+        onSaveEditClick={handleSaveEdit}
+        onCancelEditClick={handleCancelEdit}
         canUndo={pastRows.length > 0}
         canRedo={futureRows.length > 0}
         onUndoClick={handleUndo}
@@ -186,8 +308,15 @@ function App() {
           onToggleRow={toggleRow}
           selectedColumns={selectedColumns}
           onToggleColumn={toggleColumn}
+          columnWidths={columnWidths}
+          onResizeColumn={handleResizeColumn}
           sortConfig={sortConfig}
           onSortChange={setSortConfig}
+          editingRowId={editingRowId}
+          editValues={editValues}
+          editErrors={editErrors}
+          onStartEdit={handleStartEdit}
+          onEditValueChange={handleEditValueChange}
         />
       </section>
 
