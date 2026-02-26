@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import AddRowModal from './components/AddRowModal'
 import DeleteConfirmModal from './components/DeleteConfirmModal'
 import Header from './components/Header'
 import Table from './components/Table'
@@ -48,11 +49,27 @@ const getInitialRows = () => {
   }
 }
 
+const generateUniqueRowId = (existingRows: Row[]) => {
+  const existingIds = new Set(existingRows.map((row) => row.id))
+
+  while (true) {
+    const candidate =
+      typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+        ? crypto.randomUUID()
+        : `row-${Date.now()}-${Math.random().toString(16).slice(2)}`
+
+    if (!existingIds.has(candidate)) return candidate
+  }
+}
+
 function App() {
   const [rows, setRows] = useState<Row[]>(getInitialRows)
+  const [pastRows, setPastRows] = useState<Row[][]>([])
+  const [futureRows, setFutureRows] = useState<Row[][]>([])
   const [search, setSearch] = useState('')
   const [sortConfig, setSortConfig] = useState<SortConfig | null>(null)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const { selected: selectedColumns, toggleSelected: toggleColumn } =
     usePersistentMultiSelect<ColumnKey>({
       storageKey: ACTIVE_COLUMNS_STORAGE_KEY,
@@ -92,9 +109,59 @@ function App() {
   }
 
   const handleConfirmDelete = () => {
-    setRows((prev) => prev.filter((row) => !selectedRows.includes(row.id)))
+    setRows((prev) => {
+      const nextRows = prev.filter((row) => !selectedRows.includes(row.id))
+      if (nextRows.length === prev.length) return prev
+
+      setPastRows((history) => [...history, prev])
+      setFutureRows([])
+      return nextRows
+    })
     setSelectedRows([])
     setIsDeleteModalOpen(false)
+  }
+
+  const handleOpenAddModal = () => {
+    setIsAddModalOpen(true)
+  }
+
+  const handleCloseAddModal = () => {
+    setIsAddModalOpen(false)
+  }
+
+  const handleConfirmAdd = (newRowData: Omit<Row, 'id'>) => {
+    setRows((prev) => {
+      const nextRow: Row = {
+        id: generateUniqueRowId(prev),
+        ...newRowData,
+        parent_id: newRowData.parent_id.trim(),
+      }
+
+      const nextRows = [...prev, nextRow]
+      setPastRows((history) => [...history, prev])
+      setFutureRows([])
+      return nextRows
+    })
+
+    setIsAddModalOpen(false)
+  }
+
+  const handleUndo = () => {
+    if (pastRows.length === 0) return
+
+    const previousRows = pastRows[pastRows.length - 1]
+    setPastRows((history) => history.slice(0, -1))
+    setFutureRows((history) => [rows, ...history])
+    setRows(previousRows)
+  }
+
+  const handleRedo = () => {
+    if (futureRows.length === 0) return
+
+    const [nextRows, ...rest] = futureRows
+    setFutureRows(rest)
+    setPastRows((history) => [...history, rows])
+    setRows(nextRows)
   }
 
   return (
@@ -105,6 +172,11 @@ function App() {
         selectedColumns={selectedColumns}
         selectedRowCount={selectedRows.length}
         onDeleteClick={handleOpenDeleteModal}
+        onAddClick={handleOpenAddModal}
+        canUndo={pastRows.length > 0}
+        canRedo={futureRows.length > 0}
+        onUndoClick={handleUndo}
+        onRedoClick={handleRedo}
       />
 
       <section>
@@ -124,6 +196,11 @@ function App() {
         selectedCount={selectedRows.length}
         onClose={handleCloseDeleteModal}
         onConfirm={handleConfirmDelete}
+      />
+      <AddRowModal
+        isOpen={isAddModalOpen}
+        onClose={handleCloseAddModal}
+        onConfirm={handleConfirmAdd}
       />
     </main>
   )
