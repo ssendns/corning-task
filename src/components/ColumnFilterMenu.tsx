@@ -1,12 +1,5 @@
 import { useEffect, useRef } from 'react'
-
-interface ColumnFilterMenuProps {
-  isOpen: boolean
-  onClose: () => void
-  onSortAsc: () => void
-  onSortDesc: () => void
-  onClearSort: () => void
-}
+import type { ColumnFilterMenuProps } from '../types/props'
 
 function ColumnFilterMenu({
   isOpen,

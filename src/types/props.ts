@@ -64,3 +64,11 @@ export interface AddRowModalProps {
   onClose: () => void
   onConfirm: (row: Omit<Row, 'id'>) => void
 }
+
+export interface ColumnFilterMenuProps {
+  isOpen: boolean
+  onClose: () => void
+  onSortAsc: () => void
+  onSortDesc: () => void
+  onClearSort: () => void
+}
