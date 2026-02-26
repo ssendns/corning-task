@@ -1,11 +1,5 @@
 import { tableColumns, type ColumnKey } from '../constants/tableColumns'
-
-interface SearchBarProps {
-  search: string
-  onSearchChange: (value: string) => void
-  selectedColumn: ColumnKey
-  onSelectedColumnChange: (value: ColumnKey) => void
-}
+import type { SearchBarProps } from '../types/props'
 
 function SearchBar({
   search,

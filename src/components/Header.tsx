@@ -1,12 +1,5 @@
-import type { ColumnKey } from '../constants/tableColumns'
+import type { HeaderProps } from '../types/props'
 import SearchBar from './SearchBar'
-
-interface HeaderProps {
-  search: string
-  onSearchChange: (value: string) => void
-  selectedColumn: ColumnKey
-  onSelectedColumnChange: (value: ColumnKey) => void
-}
 
 function Header({
   search,

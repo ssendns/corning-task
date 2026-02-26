@@ -1,13 +1,7 @@
 import TableHeader from './TableHeader'
 import TableRow from './TableRow'
 import { tableColumns } from '../constants/tableColumns'
-import type { Row } from '../types/row'
-
-interface TableProps {
-  data: Row[]
-  activeId: string
-  onSelect: (id: string) => void
-}
+import type { TableProps } from '../types/props'
 
 function Table({ data, activeId, onSelect }: TableProps) {
   return (

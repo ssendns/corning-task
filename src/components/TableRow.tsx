@@ -1,11 +1,5 @@
-import type { Row } from '../types/row'
 import { getCellClassName, getCellValue, tableColumns } from '../constants/tableColumns'
-
-interface TableRowProps {
-  row: Row
-  isActive: boolean
-  onSelect: (id: string) => void
-}
+import type { TableRowProps } from '../types/props'
 
 function TableRow({ row, isActive, onSelect }: TableRowProps) {
   return (
