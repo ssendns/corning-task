@@ -1,4 +1,5 @@
 import type { ColumnKey } from '../constants/tableColumns'
+import type { EditRowFormErrors, EditRowFormValues } from '../utils/rowValidation'
 import type { Row } from './row'
 
 export type SortDirection = 'asc' | 'desc'
@@ -14,14 +15,26 @@ export interface TableProps {
   onToggleRow: (id: string, withShift: boolean) => void
   selectedColumns: ColumnKey[]
   onToggleColumn: (key: ColumnKey, withShift: boolean) => void
+  columnWidths: Record<ColumnKey, number>
+  onResizeColumn: (key: ColumnKey, width: number) => void
   sortConfig: SortConfig | null
   onSortChange: (config: SortConfig | null) => void
+  editingRowId: string | null
+  editValues: EditRowFormValues
+  editErrors: EditRowFormErrors
+  onStartEdit: (row: Row) => void
+  onEditValueChange: (field: keyof EditRowFormValues, value: string) => void
 }
 
 export interface TableRowProps {
   row: Row
   isSelected: boolean
   onToggleRow: (id: string, withShift: boolean) => void
+  isEditing: boolean
+  editValues: EditRowFormValues
+  editErrors: EditRowFormErrors
+  onStartEdit: (row: Row) => void
+  onEditValueChange: (field: keyof EditRowFormValues, value: string) => void
 }
 
 export interface HeaderProps {
@@ -29,8 +42,11 @@ export interface HeaderProps {
   onSearchChange: (value: string) => void
   selectedColumns: ColumnKey[]
   selectedRowCount: number
+  isEditing: boolean
   onDeleteClick: () => void
   onAddClick: () => void
+  onSaveEditClick: () => void
+  onCancelEditClick: () => void
   canUndo: boolean
   canRedo: boolean
   onUndoClick: () => void
