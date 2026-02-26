@@ -1,18 +1,11 @@
 import { useRef, useState } from 'react'
 import { ChevronDown } from 'lucide-react'
 import { tableColumns } from '../constants/tableColumns'
+import { MIN_COLUMN_WIDTH } from '../constants/ui'
 import type { ColumnKey } from '../constants/tableColumns'
+import type { TableHeaderProps } from '../types/props'
+import ColumnResizeHandle from './ColumnResizeHandle'
 import ColumnFilterMenu from './ColumnFilterMenu'
-import type { SortConfig } from '../types/props'
-
-interface TableHeaderProps {
-  selectedColumns: ColumnKey[]
-  onToggleColumn: (key: ColumnKey, withShift: boolean) => void
-  columnWidths: Record<ColumnKey, number>
-  onResizeColumn: (key: ColumnKey, width: number) => void
-  sortConfig: SortConfig | null
-  onSortChange: (config: SortConfig | null) => void
-}
 
 function TableHeader({
   selectedColumns,
@@ -24,7 +17,6 @@ function TableHeader({
 }: TableHeaderProps) {
   const [openMenuKey, setOpenMenuKey] = useState<ColumnKey | null>(null)
   const isResizingRef = useRef(false)
-  const MIN_COLUMN_WIDTH = 96
 
   return (
     <thead className="select-none text-xs uppercase tracking-wide text-slate-700">
@@ -58,7 +50,7 @@ function TableHeader({
                 onMouseDown={(event) => event.stopPropagation()}
                 onClick={(event) => {
                   event.stopPropagation()
-                  setOpenMenuKey((prev) => (prev === column.key ? null : column.key))
+                  setOpenMenuKey((prev: ColumnKey | null) => (prev === column.key ? null : column.key))
                 }}
                 className="rounded p-1 text-slate-500 hover:bg-slate-200 hover:text-slate-700"
                 aria-label={`Open ${column.label} filter menu`}
@@ -81,35 +73,13 @@ function TableHeader({
                   setOpenMenuKey(null)
                 }}
               />
-              <div
-                className="absolute -right-1 top-0 h-full w-2 cursor-col-resize"
-                onMouseDown={(event) => {
-                  event.preventDefault()
-                  event.stopPropagation()
-                  isResizingRef.current = true
-
-                  const startX = event.clientX
-                  const startWidth = columnWidths[column.key]
-
-                  const handleMouseMove = (moveEvent: MouseEvent) => {
-                    const delta = moveEvent.clientX - startX
-                    const nextWidth = Math.max(MIN_COLUMN_WIDTH, startWidth + delta)
-                    onResizeColumn(column.key, nextWidth)
-                  }
-
-                  const handleMouseUp = () => {
-                    window.removeEventListener('mousemove', handleMouseMove)
-                    window.removeEventListener('mouseup', handleMouseUp)
-                    window.setTimeout(() => {
-                      isResizingRef.current = false
-                    }, 0)
-                  }
-
-                  window.addEventListener('mousemove', handleMouseMove)
-                  window.addEventListener('mouseup', handleMouseUp)
+              <ColumnResizeHandle
+                startWidth={columnWidths[column.key]}
+                minWidth={MIN_COLUMN_WIDTH}
+                onResize={(nextWidth) => onResizeColumn(column.key, nextWidth)}
+                onResizeStateChange={(isResizing) => {
+                  isResizingRef.current = isResizing
                 }}
-                onClick={(event) => event.stopPropagation()}
-                aria-hidden="true"
               />
             </div>
           </th>
