@@ -9,15 +9,29 @@ function Table({
   onToggleRow,
   selectedColumns,
   onToggleColumn,
+  columnWidths,
+  onResizeColumn,
   sortConfig,
   onSortChange,
+  editingRowId,
+  editValues,
+  editErrors,
+  onStartEdit,
+  onEditValueChange,
 }: TableProps) {
   return (
     <div className="w-full overflow-x-auto border border-app-border bg-white">
       <table className="w-full border-collapse">
+        <colgroup>
+          {tableColumns.map((column) => (
+            <col key={column.key} style={{ width: `${columnWidths[column.key]}px` }} />
+          ))}
+        </colgroup>
         <TableHeader
           selectedColumns={selectedColumns}
           onToggleColumn={onToggleColumn}
+          columnWidths={columnWidths}
+          onResizeColumn={onResizeColumn}
           sortConfig={sortConfig}
           onSortChange={onSortChange}
         />
@@ -29,6 +43,11 @@ function Table({
                 row={row}
                 isSelected={selectedRows.includes(row.id)}
                 onToggleRow={onToggleRow}
+                isEditing={editingRowId === row.id}
+                editValues={editValues}
+                editErrors={editErrors}
+                onStartEdit={onStartEdit}
+                onEditValueChange={onEditValueChange}
               />
             ))
           ) : (
