@@ -3,11 +3,24 @@ import TableRow from './TableRow'
 import { tableColumns } from '../constants/tableColumns'
 import type { TableProps } from '../types/props'
 
-function Table({ data, selectedRows, onToggleRow, selectedColumns, onToggleColumn }: TableProps) {
+function Table({
+  data,
+  selectedRows,
+  onToggleRow,
+  selectedColumns,
+  onToggleColumn,
+  sortConfig,
+  onSortChange,
+}: TableProps) {
   return (
     <div className="w-full overflow-x-auto border border-app-border bg-white">
       <table className="w-full border-collapse">
-        <TableHeader selectedColumns={selectedColumns} onToggleColumn={onToggleColumn} />
+        <TableHeader
+          selectedColumns={selectedColumns}
+          onToggleColumn={onToggleColumn}
+          sortConfig={sortConfig}
+          onSortChange={onSortChange}
+        />
         <tbody>
           {data.length > 0 ? (
             data.map((row) => (
